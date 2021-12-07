@@ -3,7 +3,7 @@
   "configureDotEnv": true,
   "integrations": [
     {
-      "name": "main",
+      "name": "approve-authorization",
       "servers": ["java", "node", "php-slim", "python", "go", "ruby"]
     }
   ]
