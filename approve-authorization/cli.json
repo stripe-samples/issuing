@@ -1,0 +1,10 @@
+{
+  "name": "issuing-approve-authorization",
+  "configureDotEnv": true,
+  "integrations": [
+    {
+      "name": "main",
+      "servers": ["java", "node", "php-slim", "python", "go", "ruby"]
+    }
+  ]
+}
