@@ -23,6 +23,12 @@ func main() {
 	// Set your secret key. Remember to switch to your live secret key in production!
 	// See your keys here: https://dashboard.stripe.com/account/apikeys
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+	// For sample support and debugging, not required for production:
+	stripe.SetAppInfo(&stripe.AppInfo{
+		Name:    "stripe-samples/issuing/approve-authorization",
+		Version: "0.0.1",
+		URL:     "https://github.com/stripe-samples",
+	})
 
 	http.HandleFunc("/webhook", handleWebhook)
 	addr := "localhost:4242"
@@ -68,4 +74,5 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 func handleAuthorizationRequest(auth stripe.IssuingAuthorization) {
 	// Authorize the transaction.
 	_, _ = authorization.Approve(auth.ID, &stripe.IssuingAuthorizationApproveParams{})
+	fmt.Println("Approved 🎉")
 }
