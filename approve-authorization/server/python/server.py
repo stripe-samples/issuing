@@ -1,3 +1,4 @@
+# To learn more, watch this video about real-time authorizations: https://www.youtube.com/watch?v=vKptxR9zdCQ
 import stripe
 import json
 import os
@@ -11,7 +12,13 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
-app = Flask(__name__, static_folder=".", static_url_path="", template_folder=".")
+# For sample support and debugging, not required for production:
+stripe.set_app_info(
+    'stripe-samples/issuing/approve-authorization',
+    version='0.0.1',
+    url='https://github.com/stripe-samples')
+
+stripe.api_version = '2020-08-27'
 
 # Set your secret key. Remember to switch to your live secret key in production.
 # See your keys here: https://dashboard.stripe.com/apikeys
@@ -20,6 +27,8 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # Uncomment and replace with a real secret. You can find your endpoint's
 # secret in your webhook settings.
 webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+app = Flask(__name__, static_folder=".", static_url_path="", template_folder=".")
 
 @app.route("/webhook", methods=["POST"])
 def webhook_received():
@@ -39,13 +48,11 @@ def webhook_received():
 
   if event["type"] == "issuing_authorization.request":
     auth = event["data"]["object"]
-    handle_authorization(auth)
+    stripe.issuing.Authorization.approve(auth.id)
+    print("Approved 🎉")
 
   return json.dumps({"success": True}), 200
 
-def handle_authorization(auth):
-  # Authorize the transaction.
-  stripe.issuing.Authorization.approve(auth['id'])
 
 if __name__ == "__main__":
   app.run(port=4242)
