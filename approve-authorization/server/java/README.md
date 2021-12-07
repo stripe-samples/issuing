@@ -15,7 +15,7 @@ mvn package
 2. Run the packaged jar
 
 ```
-java -cp target/replace-with-sample-name-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.stripe.sample.Server
+java -cp target/sample-jar-with-dependencies.jar com.stripe.sample.Server
 ```
 
 3. Forward Stripe events to your local server

@@ -23,6 +23,12 @@ public class Server {
     Dotenv dotenv = Dotenv.load();
     Stripe.apiKey = dotenv.get("STRIPE_SECRET_KEY");
 
+    // For sample support and debugging, not required for production:
+    Stripe.setAppInfo(
+        "stripe-samples/issuing/approve-authorization",
+        "0.0.1",
+        "https://github.com/stripe-samples");
+
     post("/webhook", (request, response) -> {
       String payload = request.body();
       String sigHeader = request.headers("Stripe-Signature");
@@ -39,7 +45,7 @@ public class Server {
         return "";
       }
 
-      if ("issuing_authorization.request".equals(event.getType())) {
+      if (event.getType() == "issuing_authorization.request") {
         // Deserialize the nested object inside the event
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         if (dataObjectDeserializer.getObject().isPresent()) {
@@ -58,6 +64,7 @@ public class Server {
     try {
       Authorization authorization = Authorization.retrieve(auth.getId());
       authorization.approve();
+      System.out.println("Approved!");
     } catch (StripeException e) {
       System.out.println("Approval failed.");
     }
