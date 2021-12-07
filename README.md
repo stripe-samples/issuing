@@ -35,8 +35,26 @@ npm start
 
 ## Start forwarding webhooks
 
+Create a direct connection between Stripe and your local running web server with the Stripe CLI:
+
 ```sh
 stripe listen --forward-to "http://localhost:4242/webhook"
+```
+
+## Trigger an authorization request
+
+Trigger an `issuing_authorization.request` event using the Stripe CLI. This will make all the API calls
+required to result in an authorization request webhook.
+
+```sh
+stripe trigger issuing_authorization.request
+```
+
+_Note_: If this does not fire an `issuing_authorization.request` event, please check to ensure your balance
+is topped up. You can add funds to your balance using:
+
+```sh
+stripe topups create --amount=2000 --currency=usd
 ```
 
 ## FAQ
