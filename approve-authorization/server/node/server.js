@@ -1,3 +1,4 @@
+// To learn more, watch this video: https://www.youtube.com/watch?v=vKptxR9zdCQ
 const express = require('express');
 const app = express();
 const env = require('dotenv').config({path: './.env'});
@@ -16,7 +17,14 @@ app.use(
 
 // Set your secret key. Remember to switch to your live secret key in production!
 // See your keys here: https://dashboard.stripe.com/account/apikeys
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2020-08-27',
+  appInfo: { // For sample support and debugging, not required for production:
+    name: "stripe-samples/issuing/approve-authorization",
+    version: "0.0.1",
+    url: "https://github.com/stripe-samples"
+  }
+});
 
 app.post('/webhook', async (req, res) => {
   let event;
@@ -52,7 +60,8 @@ app.post('/webhook', async (req, res) => {
 
 const handleAuthRequest = async (auth) => {
   // Authorize the transaction.
-  await stripe.issuing.authorizations.approve(auth['id'])
+  await stripe.issuing.authorizations.approve(auth.id);
+  console.log(`Approved 🎉`);
 }
 
 app.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
