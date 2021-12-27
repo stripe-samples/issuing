@@ -54,7 +54,7 @@ _Note_: If this does not fire an `issuing_authorization.request` event, please c
 is topped up. You can add funds to your balance using:
 
 ```sh
-stripe topups create --amount=2000 --currency=usd
+stripe topups create --amount=2000 --currency=usd --data destination_balance=issuing
 ```
 
 ## FAQ
