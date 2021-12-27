@@ -42,6 +42,8 @@ post '/webhook' do
     return
   end
 
+  puts "Handling #{event.type}"
+
   if event.type == 'issuing_authorization.request'
     auth = event.data.object
     # Authorize the transaction.
