@@ -1,6 +1,8 @@
 # Approve an Issuing authorization
 
-This sample shows you how to integrate with Stripe [Issuing](https://stripe.com/issuing) leveraging [Real-time authorizations](https://stripe.com/docs/issuing/controls/real-time-authorizations).
+This sample shows you how to integrate with Stripe
+[Issuing](https://stripe.com/issuing) leveraging [Real-time
+authorizations](https://stripe.com/docs/issuing/controls/real-time-authorizations).
 
 # How to run locally
 
@@ -22,7 +24,8 @@ languages, and configuring your `.env` file with your Stripe API keys.
 ## Start the server
 
 
-Pick the server language you want and follow the instructions in the server folder README on how to run.
+Pick the server language you want and follow the instructions in the server
+folder README on how to run.
 
 For example, if you want to run the Node server:
 
@@ -35,7 +38,8 @@ npm start
 
 ## Start forwarding webhooks
 
-Create a direct connection between Stripe and your local running web server with the Stripe CLI:
+Create a direct connection between Stripe and your local running web server
+with the Stripe CLI:
 
 ```sh
 stripe listen --forward-to "http://localhost:4242/webhook"
@@ -43,18 +47,20 @@ stripe listen --forward-to "http://localhost:4242/webhook"
 
 ## Trigger an authorization request
 
-Trigger an `issuing_authorization.request` event using the Stripe CLI. This will make all the API calls
-required to result in an authorization request webhook.
+Trigger an `issuing_authorization.request` event using the Stripe CLI. This
+will make all the API calls required to result in an authorization request
+webhook.
 
 ```sh
 stripe trigger issuing_authorization.request
 ```
 
-_Note_: If this does not fire an `issuing_authorization.request` event, please check to ensure your balance
-is topped up. You can add funds to your balance using:
+_Note_: If this does not fire an `issuing_authorization.request` event, please
+check to ensure your balance is topped up. You can add funds to your balance
+using:
 
 ```sh
-stripe topups create --amount=2000 --currency=usd --data destination_balance=issuing
+stripe topups create --amount=2000 --currency=usd
 ```
 
 ## FAQ
