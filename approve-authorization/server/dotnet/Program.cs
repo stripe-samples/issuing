@@ -4,12 +4,13 @@ using Stripe.Issuing;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+DotNetEnv.Env.Load();
+StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+
 app.MapPost("/webhook", async (HttpRequest request) =>
 {
     var json = await new StreamReader(request.Body).ReadToEndAsync();
-
-    // const string signingSecret = "whsec_npTtwxS9vbc0dj82NJP1EKgK013WcLUR";
-    const string signingSecret = "whsec_CEnfjmYibVGzKb66XdWdlSw06T8CONsz";
+    var signingSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
     try
     {
         var stripeEvent = EventUtility.ConstructEvent(
