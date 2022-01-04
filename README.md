@@ -10,7 +10,9 @@ The Stripe CLI is the fastest way to clone and configure a sample to run locally
 
 ## Using the Stripe CLI
 
-If you haven't already installed the CLI, follow the installation steps. The CLI is useful for cloning samples and locally testing webhooks and Stripe integrations.
+If you haven't already installed the CLI, follow the installation steps. The
+CLI is useful for cloning samples and locally testing webhooks and Stripe
+integrations.
 
 In your terminal, run the Stripe CLI command to clone the sample:
 
