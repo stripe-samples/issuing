@@ -60,7 +60,7 @@ check to ensure your balance is topped up. You can add funds to your balance
 using:
 
 ```sh
-stripe topups create --amount=2000 --currency=usd
+stripe topups create --amount=2000 --currency=usd -d "destination_balance=issuing"
 ```
 
 ## FAQ
