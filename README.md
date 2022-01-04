@@ -1,7 +1,7 @@
-# Approve an Issuing authorization
+# Issuing
 
 This sample shows you how to integrate with Stripe
-[Issuing](https://stripe.com/issuing) leveraging [Real-time
+[Issuing](https://stripe.com/issuing). Specifically, how to leverage [Real-time
 authorizations](https://stripe.com/docs/issuing/controls/real-time-authorizations).
 
 # How to run locally
@@ -88,4 +88,3 @@ Sign up to [stay updated with developer news](https://go.stripe.global/dev-diges
 
 - [@stevekaliski-stripe](https://twitter.com/stevekaliski)
 - [@cjavilla-stripe](https://twitter.com/cjav_dev)
-
