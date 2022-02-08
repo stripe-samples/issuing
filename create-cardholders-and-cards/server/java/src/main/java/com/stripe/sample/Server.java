@@ -15,30 +15,100 @@ import com.stripe.Stripe;
 import com.stripe.net.ApiResource;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.PaymentIntent;
+import com.stripe.model.issuing.Cardholder;
+import com.stripe.model.issuing.Card;
 import com.stripe.exception.*;
 import com.stripe.net.Webhook;
-import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.issuing.CardholderCreateParams;
+import com.stripe.param.issuing.CardCreateParams;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class Server {
   private static Gson gson = new Gson();
 
-  static class CreatePaymentRequest {
+  static class CreateCardholderRequest {
+    @SerializedName("name")
+    String name;
+
+    public String getName() {
+      return name;
+    }
+
+    @SerializedName("email")
+    String email;
+
+    public String getEmail() {
+      return email;
+    }
+
+    @SerializedName("phone_number")
+    String phoneNumber;
+
+    public String getPhoneNumber() {
+      return phoneNumber;
+    }
+
+    @SerializedName("line1")
+    String line1;
+
+    public String getLine1() {
+      return line1;
+    }
+
+    @SerializedName("city")
+    String city;
+
+    public String getCity() {
+      return city;
+    }
+
+    @SerializedName("state")
+    String state;
+
+    public String getState() {
+      return state;
+    }
+
+    @SerializedName("postal_code")
+    String postalCode;
+
+    public String getPostalCode() {
+      return postalCode;
+    }
+
+    @SerializedName("country")
+    String country;
+
+    public String getCountry() {
+      return country;
+    }
+  }
+
+  static class CreateCardRequest {
+    @SerializedName("cardholder")
+    String cardholderId;
+
+    public String getCardholderId() {
+        return cardholderId;
+    }
+
+    @SerializedName("status")
+    String status;
+
+    public CardCreateParams.Status getStatus() {
+        if(status == "on") {
+          return CardCreateParams.Status.ACTIVE;
+        } else {
+          return CardCreateParams.Status.INACTIVE;
+        }
+    }
+
     @SerializedName("currency")
     String currency;
 
     public String getCurrency() {
-      return currency;
-    }
-  }
-
-  static class ConfigResponse {
-    private String publishableKey;
-
-    public ConfigResponse(String publishableKey) {
-      this.publishableKey = publishableKey;
+        return currency;
     }
   }
 
@@ -51,14 +121,6 @@ public class Server {
     }
   }
 
-  static class CreatePaymentResponse {
-    private String clientSecret;
-
-    public CreatePaymentResponse(String clientSecret) {
-      this.clientSecret = clientSecret;
-    }
-  }
-
   public static void main(String[] args) {
     port(4242);
     Dotenv dotenv = Dotenv.load();
@@ -67,7 +129,7 @@ public class Server {
 
     // For sample support and debugging, not required for production:
     Stripe.setAppInfo(
-        "stripe-samples/<your-sample-name>",
+        "stripe-samples/issuing/create-cardholders-and-cards",
         "0.0.1",
         "https://github.com/stripe-samples"
         );
@@ -78,29 +140,69 @@ public class Server {
           dotenv.get("STATIC_DIR")
           ).normalize().toString());
 
-    get("/config", (request, response) -> {
+    post("/create-cardholder", (request, response) -> {
       response.type("application/json");
 
-      return gson.toJson(new ConfigResponse(dotenv.get("STRIPE_PUBLISHABLE_KEY")));
-    });
+      CreateCardholderRequest postBody = gson.fromJson(request.body(), CreateCardholderRequest.class);
 
-    post("/create-payment-intent", (request, response) -> {
-      response.type("application/json");
-
-      CreatePaymentRequest postBody = gson.fromJson(request.body(), CreatePaymentRequest.class);
-
-      PaymentIntentCreateParams createParams = new PaymentIntentCreateParams
-        .Builder()
-        .setCurrency(postBody.getCurrency())
-        .setAmount(1999L)
-        .build();
+      CardholderCreateParams createParams = new CardholderCreateParams
+          .Builder()
+          .setStatus(CardholderCreateParams.Status.ACTIVE)
+          .setType(CardholderCreateParams.Type.INDIVIDUAL)
+          .setName(postBody.getName())
+          .setEmail(postBody.getEmail())
+          .setPhoneNumber(postBody.getPhoneNumber())
+          .setBilling(CardholderCreateParams.Billing.builder()
+                .setAddress(CardholderCreateParams.Billing.Address.builder()
+                    .setLine1(postBody.getLine1())
+                    .setCity(postBody.getCity())
+                    .setState(postBody.getState())
+                    .setPostalCode(postBody.getPostalCode())
+                    .setCountry(postBody.getCountry())
+                    .build())
+                .build())
+          .build();
 
       try {
         // Create a PaymentIntent with the order amount and currency
-        PaymentIntent intent = PaymentIntent.create(createParams);
+        Cardholder cardholder = Cardholder.create(createParams);
 
-        // Send PaymentIntent details to client
-        return gson.toJson(new CreatePaymentResponse(intent.getClientSecret()));
+        return gson.toJson(cardholder);
+      } catch(StripeException e) {
+        response.status(400);
+        return gson.toJson(new FailureResponse(e.getMessage()));
+      } catch(Exception e) {
+        response.status(500);
+        return gson.toJson(e);
+      }
+    });
+
+    post("/create-card", (request, response) -> {
+      response.type("application/json");
+
+      try {
+        CreateCardRequest postBody = gson.fromJson(request.body(), CreateCardRequest.class);
+        CardCreateParams createParams = new CardCreateParams
+            .Builder()
+            .setType(CardCreateParams.Type.VIRTUAL)
+            .setStatus(postBody.getStatus())
+            .setCardholder(postBody.getCardholderId())
+            .setCurrency(postBody.getCurrency())
+            // Include shipping address for physical cards:
+            // .setShipping(CardholderCreateParams.Shipping.builder()
+            //       .setAddress(CardholderCreateParams.Shipping.Address.builder()
+            //           .setLine1(postBody.getLine1())
+            //           .setCity(postBody.getCity())
+            //           .setState(postBody.getState())
+            //           .setPostalCode(postBody.getPostalCode())
+            //           .setCountry(postBody.getCountry())
+            //           .build())
+            //       .build())
+            .build();
+
+        Card card = Card.create(createParams);
+
+        return gson.toJson(card);
       } catch(StripeException e) {
         response.status(400);
         return gson.toJson(new FailureResponse(e.getMessage()));

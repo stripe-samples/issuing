@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Stripe;
-using Stripe.Checkout;
+using Stripe.Issuing;
 
 namespace server.Controllers
 {
@@ -20,44 +20,48 @@ namespace server.Controllers
             this.client = new StripeClient(this.options.Value.SecretKey);
         }
 
-        [HttpGet("config")]
-        public ConfigResponse GetConfig()
+        [HttpPost("create-cardholder")]
+        public async Task<IActionResult> CreateCardholder([FromBody] CreateCardholderRequest req)
         {
-            // return json: publishableKey (.env)
-            return new ConfigResponse
+
+            // Create a Cardholder.
+            //
+            // See the documentation [0] for the full list of supported parameters.
+            //
+            // [0] https://stripe.com/docs/api/issuing/cardholders/create
+            var options = new CardholderCreateOptions
             {
-                PublishableKey = this.options.Value.PublishableKey,
+                Status = "active",
+                Type = "individual",
+                Name = req.Name,
+                Email = req.Email,
+                PhoneNumber = req.PhoneNumber,
+                Billing = new CardholderBillingOptions {
+                    Address = new AddressOptions {
+                        Line1 = req.Line1,
+                        City = req.City,
+                        State = req.State,
+                        PostalCode = req.PostalCode,
+                        Country = req.Country,
+                    },
+                },
             };
-        }
 
-        [HttpPost("create-payment-intent")]
-        public async Task<IActionResult> CreatePaymentIntent([FromBody] CreatePaymentIntentRequest req)
-        {
-          var options = new PaymentIntentCreateOptions
-          {
-            Amount = 1999,
-            Currency = req.Currency,
-          };
+            var service = new CardholderService(this.client);
 
-          var service = new PaymentIntentService(this.client);
-
-          try
-          {
-            var paymentIntent = await service.CreateAsync(options);
-
-            return Ok(new CreatePaymentIntentResponse
+            try
             {
-                ClientSecret = paymentIntent.ClientSecret,
-            });
-          }
-          catch (StripeException e)
-          {
-            return BadRequest(new { error = new { message = e.StripeError.Message}});
-          }
-          catch (System.Exception)
-          {
-            return BadRequest(new { error = new { message = "unknown failure: 500"}});
-          }
+                var cardholder = await service.CreateAsync(options);
+                return Ok(cardholder);
+            }
+            catch (StripeException e)
+            {
+                return BadRequest(new { error = new { message = e.StripeError.Message}});
+            }
+            catch (System.Exception)
+            {
+                return BadRequest(new { error = new { message = "unknown failure: 500"}});
+            }
         }
 
         [HttpPost("webhook")]
@@ -68,10 +72,10 @@ namespace server.Controllers
             try
             {
                 stripeEvent = EventUtility.ConstructEvent(
-                    json,
-                    Request.Headers["Stripe-Signature"],
-                    this.options.Value.WebhookSecret
-                );
+                        json,
+                        Request.Headers["Stripe-Signature"],
+                        this.options.Value.WebhookSecret
+                        );
                 Console.WriteLine($"Webhook notification with type: {stripeEvent.Type} found for {stripeEvent.Id}");
             }
             catch (Exception e)

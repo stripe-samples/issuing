@@ -42,11 +42,11 @@ app.post('/create-cardholder', async (req, res) => {
   // [0] https://stripe.com/docs/api/issuing/cardholders/create
   try {
     const cardholder = await stripe.issuing.cardholders.create({
+      status: 'active',
+      type: 'individual',
       name: name,
       email: email,
       phone_number: phone_number,
-      status: 'active',
-      type: 'individual',
       billing: {
         address: {
           line1: line1,

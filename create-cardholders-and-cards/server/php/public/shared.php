@@ -9,10 +9,8 @@ if(!file_exists('../.env')) {
 
   <p>Make a copy of <code>.env.example</code>, place it in the same directory as composer.json, and name it <code>.env</code>, then populate the variables.</p>
   <p>It should look something like the following, but contain your <a href='https://dashboard.stripe.com/test/apikeys'>API keys</a>:</p>
-  <pre>STRIPE_PUBLISHABLE_KEY=pk_test...
-STRIPE_SECRET_KEY=sk_test...
+  <pre>STRIPE_SECRET_KEY=sk_test...
 STRIPE_WEBHOOK_SECRET=whsec_...
-DOMAIN=http://localhost:4242</pre>
   <hr>
 
   <p>You can use this command to get started:</p>
@@ -50,8 +48,8 @@ DOMAIN=http://localhost:4242</pre>
 
 // For sample support and debugging. Not required for production:
 \Stripe\Stripe::setAppInfo(
-  "stripe-samples/<your sample name>",
-  "0.0.2",
+  "stripe-samples/issuing/create-cardholders-and-cards",
+  "0.0.1",
   "https://github.com/stripe-samples"
 );
 

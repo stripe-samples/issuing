@@ -12,8 +12,9 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v72"
+	"github.com/stripe/stripe-go/v72/issuing/card"
+	"github.com/stripe/stripe-go/v72/issuing/cardholder"
 	"github.com/stripe/stripe-go/v72/webhook"
-	"github.com/stripe/stripe-go/v72/paymentintent"
 )
 
 func main() {
@@ -32,8 +33,8 @@ func main() {
 	})
 
 	http.Handle("/", http.FileServer(http.Dir(os.Getenv("STATIC_DIR"))))
-	http.HandleFunc("/config", handleConfig)
-	http.HandleFunc("/create-payment-intent", handleCreatePaymentIntent)
+	http.HandleFunc("/create-cardholder", handleCreateCardholder)
+	http.HandleFunc("/create-card", handleCreateCard)
 	http.HandleFunc("/webhook", handleWebhook)
 
 	log.Println("server running at 0.0.0.0:4242")
@@ -52,32 +53,45 @@ type ErrorResponse struct {
 	Error *ErrorResponseMessage `json:"error"`
 }
 
-func handleConfig(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-	writeJSON(w, struct {
-		PublishableKey string `json:"publishableKey"`
-	}{
-		PublishableKey: os.Getenv("STRIPE_PUBLISHABLE_KEY"),
-	})
+type cardholderCreateReq struct {
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Line1       string `json:"line1"`
+	City        string `json:"city"`
+	State       string `json:"state"`
+	PostalCode  string `json:"postal_code"`
+	Country     string `json:"country"`
 }
 
-type paymentIntentCreateReq struct {
-	Currency          string `json:"currency"`
+type cardCreateReq struct {
+	Cardholder string `json:"cardholder"`
+	Currency   string `json:"currency"`
+	Status     bool   `json:"status"`
 }
 
-func handleCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
-	req := paymentIntentCreateReq{}
+func handleCreateCardholder(w http.ResponseWriter, r *http.Request) {
+	req := cardholderCreateReq{}
 	json.NewDecoder(r.Body).Decode(&req)
 
-	params := &stripe.PaymentIntentParams{
-		Amount:             stripe.Int64(1999),
-		Currency:           stripe.String(req.Currency),
+	params := &stripe.IssuingCardholderParams{
+		Status:      stripe.String("active"),
+		Type:        stripe.String("individual"),
+		Name:        stripe.String(req.Name),
+		Email:       stripe.String(req.Email),
+		PhoneNumber: stripe.String(req.PhoneNumber),
+		Billing: &stripe.IssuingCardholderBillingParams{
+			Address: &stripe.AddressParams{
+				Line1:      stripe.String(req.Line1),
+				City:       stripe.String(req.City),
+				State:      stripe.String(req.State),
+				PostalCode: stripe.String(req.PostalCode),
+				Country:    stripe.String(req.Country),
+			},
+		},
 	}
 
-	pi, err := paymentintent.New(params)
+	ich, err := cardholder.New(params)
 	if err != nil {
 		// Try to safely cast a generic error to a stripe.Error so that we can get at
 		// some additional Stripe-specific information about what went wrong.
@@ -92,13 +106,55 @@ func handleCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, struct {
-		ClientSecret string `json:"clientSecret"`
-	}{
-		ClientSecret: pi.ClientSecret,
-	})
+	writeJSON(w, ich)
 }
 
+func handleCreateCard(w http.ResponseWriter, r *http.Request) {
+	req := cardCreateReq{}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	var status stripe.IssuingCardStatus
+	if req.Status {
+		status = stripe.IssuingCardStatusActive
+	} else {
+		status = stripe.IssuingCardStatusInactive
+	}
+
+	params := &stripe.IssuingCardParams{
+		Cardholder: stripe.String(req.Cardholder),
+		Currency:   stripe.String(req.Currency),
+		Type:       stripe.String(string(stripe.IssuingCardTypeVirtual)),
+		Status:     stripe.String(string(status)),
+
+		// Include shipping address for physical cards.
+		// Shipping: &stripe.CardholderShippingParams{
+		// 	Address: &stripe.AddressParams{
+		// 		Line1: stripe.String(req.Line1),
+		// 		City: stripe.String(req.City),
+		// 		State: stripe.String(req.State),
+		// 		PostalCode: stripe.String(req.PostalCode),
+		// 		Country: stripe.String(req.Country),
+		// 	}
+		// }
+	}
+
+	c, err := card.New(params)
+	if err != nil {
+		// Try to safely cast a generic error to a stripe.Error so that we can get at
+		// some additional Stripe-specific information about what went wrong.
+		if stripeErr, ok := err.(*stripe.Error); ok {
+			fmt.Printf("Other Stripe error occurred: %v\n", stripeErr.Error())
+			writeJSONErrorMessage(w, stripeErr.Error(), 400)
+		} else {
+			fmt.Printf("Other error occurred: %v\n", err.Error())
+			writeJSONErrorMessage(w, "Unknown server error", 500)
+		}
+
+		return
+	}
+
+	writeJSON(w, c)
+}
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)

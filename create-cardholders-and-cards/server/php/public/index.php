@@ -2,73 +2,109 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stripe Issuing Sample</title>
+    <meta name="description" content="Create Stripe Issuing Cardholders and Cards" />
 
-    <title>Accept a payment</title>
-
-    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
   </head>
+
   <body>
-    <main>
-      <h1>Accept a payment</h1>
-
-      <h3>Cards</h3>
-      <ul>
-        <li>
-          <a href="/card.php">Card</a>
-        </li>
-      </ul>
-
-      <h3>Bank debits</h3>
-      <ul>
-        <li>ACH Direct Debit</li>
-        <li>Bacs Direct Debit</li>
-        <li>
-          <a href="/becs-debit.php">BECS Direct Debit</a>
-        </li>
-        <li>
-          <a href="/sepa-debit.php">SEPA Direct Debit</a>
-        </li>
-      </ul>
-
-      <h3>Bank redirects</h3>
-      <ul>
-        <li><a href="/bancontact.php">Bancontact</a></li>
-        <li><a href="/eps.php">EPS</a></li>
-        <li><a href="/fpx.php">FPX</a></li>
-        <li><a href="/giropay.php">giropay</a></li>
-        <li><a href="/ideal.php">iDEAL</a></li>
-        <li><a href="/p24.php">Przelewy24 (P24)</a></li>
-        <li><a href="/sofort.php">Sofort</a></li>
-      </ul>
-
-      <h3>Bank transfers</h3>
-      <ul>
-        <li>ACH Credit</li>
-        <li>Multibanco</li>
-      </ul>
-
-      <h3>Buy now pay later</h3>
-      <ul>
-        <li><a href="/afterpay-clearpay.php">Afterpay / Clearpay</a></li>
-        <li>Klarna</li>
-      </ul>
-
-      <h3>Vouchers</h3>
-      <ul>
-        <li><a href="/boleto.php">Boleto</a></li>
-        <li><a href="/oxxo.php">OXXO</a></li>
-      </ul>
-
-      <h3>Wallets</h3>
-      <ul>
-        <li><a href="/alipay.php">Alipay</a></li>
-        <li><a href="/apple-pay.php">Apple Pay</a></li>
-        <li><a href="/google-pay.php">Google Pay</a></li>
-        <li><a href="/grabpay.php">GrabPay</a></li>
-        <li>Microsoft Pay</li>
-        <li>WeChat Pay</li>
-      </ul>
-    </main>
+    <div class="sr-root">
+      <div class="sr-main">
+        <form action="/create-cardholder.php" method="post">
+          <h2>Create cardholder</h2>
+          <div class="sr-form-row">
+            <label for="name">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              placeholder="Jenny Rosen"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-form-row">
+            <label for="email">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="jenny.rosen@example.com"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-form-row">
+            <label for="phone_number">
+              Phone number
+            </label>
+            <input
+              type="tel"
+              name="phone_number"
+              id="phone_number"
+              placeholder="18008675309"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-combo-inputs">
+            <label for="address">
+              Address
+            </label>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="line1"
+                id="line1"
+                placeholder="123 Main Street"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="city"
+                id="city"
+                placeholder="San Francisco"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="state"
+                id="state"
+                placeholder="CA"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="postal_code"
+                id="postal_code"
+                placeholder="94111"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="country"
+                id="country"
+                placeholder="US"
+                class="sr-input"
+              />
+            </div>
+          </div>
+          <button id="submit"><div class="spinner hidden" id="spinner"></div><span id="button-text">Create</span></button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

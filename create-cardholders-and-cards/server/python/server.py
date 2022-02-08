@@ -10,7 +10,7 @@ load_dotenv(find_dotenv())
 
 # For sample support and debugging, not required for production:
 stripe.set_app_info(
-    'stripe-samples/your-sample-name',
+    'stripe-samples/issuing/create-cardholders-and-cards',
     version='0.0.1',
     url='https://github.com/stripe-samples')
 
@@ -25,33 +25,69 @@ def get_root():
     return render_template('index.html')
 
 
-@app.route('/config', methods=['GET'])
-def get_config():
-    return jsonify({'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY')})
-
-
-@app.route('/create-payment-intent', methods=['POST'])
-def create_payment():
+@app.route('/create-cardholder', methods=['POST'])
+def create_cardholder():
     data = json.loads(request.data)
 
-    # Each payment method type has support for different currencies. In order to
-    # support many payment method types and several currencies, this server
-    # endpoint accepts both the payment method type and the currency as
-    # parameters.
-    #
-    # Some example payment method types include `card`, `ideal`, and `alipay`.
-    currency = data['currency']
-
-    # Create a PaymentIntent with the amount, currency, and a payment method type.
+    # Create a Cardholder.
     #
     # See the documentation [0] for the full list of supported parameters.
     #
-    # [0] https://stripe.com/docs/api/payment_intents/create
+    # [0] https://stripe.com/docs/api/issuing/cardholders/create
     try:
-        intent = stripe.PaymentIntent.create(amount=1999, currency='usd')
+        cardholder = stripe.issuing.Cardholder.create(
+            status='active',
+            type='individual',
+            name=data['name'],
+            email=data['email'],
+            phone_number=data['phone_number'],
+            billing={
+                "address": {
+                    "line1": data['line1'],
+                    "city": data['city'],
+                    "state": data['state'],
+                    "country": data['country'],
+                    "postal_code": data['postal_code'],
+                },
+            })
 
-        # Send PaymentIntent details to the front end.
-        return jsonify({'clientSecret': intent.client_secret})
+        return jsonify(cardholder)
+    except stripe.error.StripeError as e:
+        return jsonify({'error': {'message': str(e)}}), 400
+    except Exception as e:
+        return jsonify({'error': {'message': str(e)}}), 400
+
+
+@app.route('/create-card', methods=['POST'])
+def create_card():
+    data = json.loads(request.data)
+
+    # Create a Card.
+    #
+    # See the documentation [0] for the full list of supported parameters.
+    #
+    # [0] https://stripe.com/docs/api/issuing/cards/create
+    try:
+        status = 'inactive' if data['status'] == None else 'active'
+        card = stripe.issuing.Card.create(
+            cardholder=data['cardholder'],
+            currency=data['currency'],
+            type='virtual',
+            status=status,
+
+            # Include shipping address for physical cards:
+            # shipping={
+            #     "address": {
+            #         "line1": data['line1'],
+            #         "city": data['city'],
+            #         "state": data['state'],
+            #         "country": data['country'],
+            #         "postal_code": data['postal_code'],
+            #     },
+            # }
+            )
+
+        return jsonify(card)
     except stripe.error.StripeError as e:
         return jsonify({'error': {'message': str(e)}}), 400
     except Exception as e:
@@ -81,9 +117,10 @@ def webhook_received():
         event_type = request_data['type']
     data_object = data['object']
 
-    if event_type == 'payment_intent.succeeded':
-        print('💰 Payment received!')
-
+    if event_type == 'issuing_cardholder.created':
+        print('Cardholder created!')
+    elif event_type == 'issuing_card.created':
+        print('Card created!')
 
     return jsonify({'status': 'success'})
 

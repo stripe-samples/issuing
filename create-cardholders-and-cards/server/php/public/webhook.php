@@ -21,13 +21,11 @@ catch (Exception $e) {
   exit;
 }
 
-if ($event->type == 'payment_intent.succeeded') {
-  // Fulfill any orders, e-mail receipts, etc
-  // To cancel the payment you will need to issue a Refund (https://stripe.com/docs/api/refunds)
-  error_log('💰 Payment received!');
+if ($event->type == 'issuing_cardholder.created') {
+  error_log('Cardholder created!');
 }
-else if ($event->type == 'payment_intent.payment_failed') {
-  error_log('❌ Payment failed.');
+else if ($event->type == 'issuing_card.created') {
+  error_log('Card created!');
 }
 
 echo json_encode(['status' => 'success']);
