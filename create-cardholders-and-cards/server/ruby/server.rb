@@ -88,7 +88,21 @@ post '/create-card' do
     )
     card.to_json
   rescue => e
-    p e
+    status 400
+    { error: { message: e.message } }.to_json
+  end
+end
+
+get '/cards/:id' do
+  #  Retrieve a Card.
+  #
+  #  See the documentation [0] for the full list of supported parameters.
+  #
+  #  [0] https://stripe.com/docs/api/issuing/cards/retrieve
+  begin
+    card = Stripe::Issuing::Card.retrieve(params[:id])
+    card.to_json
+  rescue => e
     status 400
     { error: { message: e.message } }.to_json
   end
