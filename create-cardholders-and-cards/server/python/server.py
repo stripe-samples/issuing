@@ -94,6 +94,22 @@ def create_card():
         return jsonify({'error': {'message': str(e)}}), 400
 
 
+@app.route('/cards/<id>', methods=['GET'])
+def get_card(id):
+    #  Retrieve a Card.
+    #
+    #  See the documentation [0] for the full list of supported parameters.
+    #
+    #  [0] https://stripe.com/docs/api/issuing/cards/retrieve
+    try:
+        card = stripe.issuing.Card.retrieve(id)
+        return jsonify(card)
+    except stripe.error.StripeError as e:
+        return jsonify({'error': {'message': str(e)}}), 400
+    except Exception as e:
+        return jsonify({'error': {'message': str(e)}}), 400
+
+
 @app.route('/webhook', methods=['POST'])
 def webhook_received():
     # You can use webhooks to receive information about asynchronous payment events.
