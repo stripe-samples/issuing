@@ -80,18 +80,20 @@ app.post('/create-card', async (req, res) => {
     const card = await stripe.issuing.cards.create({
       cardholder: cardholder,
       currency: currency,
-      type: 'physical',
+      type: 'virtual',
       status: status ? 'active' : 'inactive',
-      shipping: {
-        name: name,
-        address: {
-          line1: line1,
-          city: city,
-          state: state,
-          postal_code: postal_code,
-          country: country,
-        },
-      },
+
+      // Include shipping address for physical cards:
+      // shipping: {
+      //   name: name,
+      //   address: {
+      //     line1: line1,
+      //     city: city,
+      //     state: state,
+      //     postal_code: postal_code,
+      //     country: country,
+      //   },
+      // },
     });
 
     res.send(card)

@@ -9,7 +9,7 @@ Dotenv.load
 
 # For sample support and debugging, not required for production:
 Stripe.set_app_info(
-  'stripe-samples/<name-of-sample>/[<name-of-integration-type>]',
+  'stripe-samples/issuing/create-cardholders-and-cards',
   version: '0.0.1',
   url: 'https://github.com/stripe-samples'
 )
@@ -25,28 +25,73 @@ get '/' do
   send_file File.join(settings.public_folder, 'index.html')
 end
 
-get '/config' do
+post '/create-cardholder' do
   content_type 'application/json'
-  {
-    publishableKey: ENV['STRIPE_PUBLISHABLE_KEY'],
-  }.to_json
+  params = JSON.parse(request.body.read, symbolize_names: true)
+
+  # Create a Cardholder.
+  #
+  # See the documentation [0] for the full list of supported parameters.
+  #
+  # [0] https://stripe.com/docs/api/issuing/cardholders/create
+  begin
+    cardholder = Stripe::Issuing::Cardholder.create(
+      name: params[:name],
+      email: params[:email],
+      phone_number: params[:phone_number],
+      status: 'active',
+      type: 'individual',
+      billing: {
+        address: {
+          line1: params[:line1],
+          city: params[:city],
+          state: params[:state],
+          postal_code: params[:postal_code],
+          country: params[:country],
+        },
+      },
+    )
+    cardholder.to_json
+  rescue => e
+    status 400
+    { error: { message: e.message } }.to_json
+  end
 end
 
-post '/create-payment-intent' do
+post '/create-card' do
   content_type 'application/json'
-  data = JSON.parse(request.body.read)
+  params = JSON.parse(request.body.read, symbolize_names: true)
 
-  # Create the payment details based on your logic.
-  # Create a PaymentIntent with the purchase amount and currency.
-  payment_intent = Stripe::PaymentIntent.create(
-    amount: 1000,
-    currency: 'usd',
-  )
+  # Create a Card.
+  #
+  # See the documentation [0] for the full list of supported parameters.
+  #
+  # [0] https://stripe.com/docs/api/issuing/cards/create
+  begin
+    card = Stripe::Issuing::Card.create(
+      type: 'virtual',
+      status: params[:status] ? 'active' : 'inactive',
+      cardholder: params[:cardholder],
+      currency: params[:currency],
 
-  # Send the PaymentIntent client_secret to the client.
-  {
-    clientSecret: payment_intent['client_secret']
-  }.to_json
+      # Include shipping address for physical cards:
+      # shipping: {
+      #   name: params[:name],
+      #   address: {
+      #     line1: params[:line1],
+      #     city: params[:city],
+      #     state: params[:state],
+      #     postal_code: params[:postal_code],
+      #     country: params[:country],
+      #   },
+      # },
+    )
+    card.to_json
+  rescue => e
+    p e
+    status 400
+    { error: { message: e.message } }.to_json
+  end
 end
 
 post '/webhook' do

@@ -14,7 +14,7 @@
   <body>
     <div class="sr-root">
       <div class="sr-main">
-        <form action='/create-cardholder' method='post'>
+        <form id="cardholder-form">
           <h2>Create cardholder</h2>
           <div class="sr-form-row">
             <label for="name">
@@ -106,5 +106,31 @@
         </form>
       </div>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const cardholderForm = document.querySelector('#cardholder-form')
+        cardholderForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const params = new FormData(cardholderForm);
+
+          fetch('/create-cardholder', {
+            method: 'POST',
+            body: JSON.stringify(Object.fromEntries(params.entries())),
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+            .then(r => r.json())
+            .then(cardholder => {
+              if(cardholder.id) {
+                window.location.replace(`/create_card.html?cardholder_id=${cardholder.id}`)
+              } else {
+                alert(cardholder.error.message);
+              }
+            })
+            .catch(e => alert(e.error.message))
+        })
+      })
+    </script>
   </body>
 </html>
