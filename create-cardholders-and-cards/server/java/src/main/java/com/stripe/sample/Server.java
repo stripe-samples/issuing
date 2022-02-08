@@ -212,6 +212,21 @@ public class Server {
       }
     });
 
+    get("/cards/:id", (request, response) -> {
+      response.type("application/json");
+
+      try {
+        Card card = Card.retrieve(request.params(":id"));
+        return gson.toJson(card);
+      } catch(StripeException e) {
+        response.status(400);
+        return gson.toJson(new FailureResponse(e.getMessage()));
+      } catch(Exception e) {
+        response.status(500);
+        return gson.toJson(e);
+      }
+    });
+
     post("/webhook", (request, response) -> {
       String payload = request.body();
       String sigHeader = request.headers("Stripe-Signature");

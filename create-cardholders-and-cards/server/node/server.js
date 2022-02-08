@@ -108,7 +108,7 @@ app.post('/create-card', async (req, res) => {
 
 app.get('/cards/:id', async (req, res) => {
   const { id } = req.params
-  console.log(id)
+
   // Retrieve a Card.
   // 
   // See the documentation [0] for the full list of supported parameters.
