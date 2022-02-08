@@ -106,6 +106,27 @@ app.post('/create-card', async (req, res) => {
   }
 });
 
+app.get('/cards/:id', async (req, res) => {
+  const { id } = req.params
+  console.log(id)
+  // Retrieve a Card.
+  // 
+  // See the documentation [0] for the full list of supported parameters.
+  // 
+  // [0] https://stripe.com/docs/api/issuing/cards/retrieve
+  try {
+    const card = await stripe.issuing.cards.retrieve(id)
+
+    res.send(card)
+  } catch(e) {
+    return res.status(400).send({
+      error: {
+        message: e.message
+      }
+    })
+  }
+})
+
 // Expose a endpoint as a webhook handler for asynchronous events.
 // Configure your webhook in the stripe developer dashboard
 // https://dashboard.stripe.com/test/webhooks
