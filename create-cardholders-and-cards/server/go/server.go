@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v72"
@@ -35,6 +36,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(os.Getenv("STATIC_DIR"))))
 	http.HandleFunc("/create-cardholder", handleCreateCardholder)
 	http.HandleFunc("/create-card", handleCreateCard)
+	http.HandleFunc("/cards/", handleGetCard)
 	http.HandleFunc("/webhook", handleWebhook)
 
 	log.Println("server running at 0.0.0.0:4242")
@@ -155,6 +157,28 @@ func handleCreateCard(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, c)
 }
+
+func handleGetCard(w http.ResponseWriter, r *http.Request) {
+	card_id := strings.Split(r.URL.Path, "/cards/")[1]
+
+	c, err := card.Get(card_id, nil)
+	if err != nil {
+		// Try to safely cast a generic error to a stripe.Error so that we can get at
+		// some additional Stripe-specific information about what went wrong.
+		if stripeErr, ok := err.(*stripe.Error); ok {
+			fmt.Printf("Other Stripe error occurred: %v\n", stripeErr.Error())
+			writeJSONErrorMessage(w, stripeErr.Error(), 400)
+		} else {
+			fmt.Printf("Other error occurred: %v\n", err.Error())
+			writeJSONErrorMessage(w, "Unknown server error", 500)
+		}
+
+		return
+	}
+
+	writeJSON(w, c)
+}
+
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
