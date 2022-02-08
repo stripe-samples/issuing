@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stripe Issuing Sample</title>
+    <meta name="description" content="Create Stripe Issuing Cardholders and Cards" />
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+
+  <body>
+    <div class="sr-root">
+      <div class="sr-main">
+        <form action='/create-cardholder' method='post'>
+          <h2>Create cardholder</h2>
+          <div class="sr-form-row">
+            <label for="name">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              placeholder="Jenny Rosen"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-form-row">
+            <label for="email">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="jenny.rosen@example.com"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-form-row">
+            <label for="phone_number">
+              Phone number
+            </label>
+            <input
+              type="tel"
+              name="phone_number"
+              id="phone_number"
+              placeholder="18008675309"
+              class="sr-input"
+            />
+          </div>
+          <div class="sr-combo-inputs">
+            <label for="address">
+              Address
+            </label>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="line1"
+                id="line1"
+                placeholder="123 Main Street"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="city"
+                id="city"
+                placeholder="San Francisco"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="state"
+                id="state"
+                placeholder="CA"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="postal_code"
+                id="postal_code"
+                placeholder="94111"
+                class="sr-input"
+              />
+            </div>
+            <div class="sr-combo-inputs-row">
+              <input
+                type="text"
+                name="country"
+                id="country"
+                placeholder="US"
+                class="sr-input"
+              />
+            </div>
+          </div>
+          <button id="submit"><div class="spinner hidden" id="spinner"></div><span id="button-text">Create</span></button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
