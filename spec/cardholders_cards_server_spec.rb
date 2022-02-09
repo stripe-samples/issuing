@@ -74,4 +74,33 @@ RSpec.describe "Create cardholders and cards integration" do
     latest_card = Stripe::Issuing::Card.list(limit: 1).data.first
     expect(old_latest_card.id).to eq(latest_card.id)
   end
+
+  it "Fetches a card by ID" do
+    cardholder = Stripe::Issuing::Cardholder.create(
+      name: 'Jenny Rosen',
+      email: 'jenny.rosen@example.com',
+      phone_number: '8008675309',
+      status: 'active',
+      type: 'individual',
+      billing: {
+        address: {
+          line1: '510 Townsend',
+          city: 'San Francisco',
+          state: 'CA',
+          postal_code: '94111',
+          country: 'US',
+        },
+      },
+    )
+    card = Stripe::Issuing::Card.create(
+      cardholder: cardholder.id,
+      currency: 'usd',
+      type: 'virtual',
+      status: 'active',
+    )
+    resp = get_json("/cards/#{card.id}")
+    expect(resp).to have_key("id")
+    expect(resp["id"]).to eq(card.id)
+    expect(resp["type"]).to eq("virtual")
+  end
 end
