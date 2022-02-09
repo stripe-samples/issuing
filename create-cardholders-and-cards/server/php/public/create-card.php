@@ -55,7 +55,13 @@ try {
   <body>
     <div class="sr-root">
       <div class="sr-main">
-        <h1><?= $card->id; ?> created successfully.</h1>
+        <h1>Card</h1>
+        <div id="id"><b>ID:</b> <?= $card->id; ?></div>
+        <div id="cardholder"><b>Cardholder ID:</b> <?= $card->cardholder->id; ?></div>
+        <div id="name"><b>Cardholder name:</b> <?= $card->cardholder->name; ?></div>
+        <div id="status"><b>Status:</b> <?= $card->status; ?></div>
+        <div id="expiry"><b>Expiry:</b> <?= $card->exp_month; ?>/<?= $card->exp_year; ?></div>
+        <div id="last4"><b>Number:</b> **** **** **** <?= $card->last4; ?></div>
       </div>
     </div>
   </body>
