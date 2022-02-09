@@ -243,14 +243,11 @@ public class Server {
       }
 
       switch (event.getType()) {
-        case "payment_intent.succeeded":
-          // Fulfill any orders, e-mail receipts, etc
-          // To cancel the payment you will need to issue a Refund
-          // (https://stripe.com/docs/api/refunds)
-          System.out.println("💰Payment received!");
+        case "issuing_cardholder.created":
+          System.out.println("Cardholder created!");
           break;
-        case "payment_intent.payment_failed":
-          System.out.println("❌ Payment failed.");
+        case "issuing_card.created":
+          System.out.println("Card created!");
           break;
         default:
           // Unexpected event type

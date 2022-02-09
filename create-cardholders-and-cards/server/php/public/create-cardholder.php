@@ -66,18 +66,6 @@ try {
             value="<?= $cardholder->id; ?>"
           />
           <div class="sr-form-row">
-            <label for="cardholder">
-              Name on card
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Jenny Rosen"
-              class="sr-input"
-            />
-          </div>
-          <div class="sr-form-row">
             <label for="currency">
               Currency
             </label>
