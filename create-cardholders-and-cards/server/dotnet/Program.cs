@@ -1,30 +1,152 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.FileProviders;
 
-namespace server
+using Stripe;
+using Stripe.Issuing;
+using Newtonsoft.Json;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.UseStaticFiles(new StaticFileOptions()
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), @"../../client")
+    ),
+    RequestPath = new PathString("")
+});
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+DotNetEnv.Env.Load();
+
+StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+
+// For sample support and debugging, not required for production:
+StripeConfiguration.AppInfo = new AppInfo
+  {
+      Name = "stripe-samples/issuing/create-cardholder-and-card",
+      Url = "https://github.com/stripe-samples",
+      Version = "0.0.1",
+  };
+
+app.MapGet("/", () => Results.Redirect("/index.html"));
+
+
+app.MapPost("/create-cardholder", async (CreateCardholderRequest request) =>
+{
+  try
+  {
+    var options = new CardholderCreateOptions
+    {
+        Type = "individual",
+        Name = request.Name,
+        Email = request.Email,
+        PhoneNumber = "8008675309", // request.PhoneNumber,
+        Billing = new CardholderBillingOptions
         {
-            DotNetEnv.Env.Load();
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                    webBuilder.UseWebRoot(Environment.GetEnvironmentVariable("STATIC_DIR"));
-                });
-        }   
+            Address = new AddressOptions
+            {
+                Line1 = request.Line1,
+                City = request.City,
+                State = request.State,
+                Country = request.Country,
+                PostalCode = "94111", // request.PostalCode,
+            },
+        },
+    };
+    var service = new CardholderService();
+    var cardholder = await service.CreateAsync(options);
+    return Results.Ok(cardholder);
+  }
+  catch(StripeException e)
+  {
+    Console.WriteLine(e);
+    return Results.BadRequest(e);
+  }
+  catch(Exception e)
+  {
+    Console.WriteLine(e);
+    return Results.BadRequest(e);
+  }
+});
+
+app.MapPost("/create-card", async (CreateCardRequest request) =>
+{
+  try
+  {
+    var options = new Stripe.Issuing.CardCreateOptions
+    {
+      Cardholder = request.Cardholder,
+      Currency = request.Currency,
+      Type = "virtual",
+      Status = request.Status ? "active" : "inactive",
+    };
+    var service = new Stripe.Issuing.CardService();
+    var card = await service.CreateAsync(options);
+    return Results.Ok(card);
+  }
+  catch(StripeException e)
+  {
+    Console.WriteLine(e);
+    return Results.BadRequest(e);
+  }
+  catch(Exception e)
+  {
+    Console.WriteLine(e);
+    return Results.BadRequest(e);
+  }
+});
+
+app.MapGet("/cards/{id}", async (string id, HttpRequest request) =>
+{
+  try
+  {
+    var service = new Stripe.Issuing.CardService();
+    var card = await service.GetAsync(id);
+    return Results.Ok(card);
+  }
+  catch(Exception e)
+  {
+    Console.WriteLine(e);
+    return Results.BadRequest(e);
+  }
+});
+
+app.MapPost("/webhook", async (HttpRequest request) =>
+{
+    var json = await new StreamReader(request.Body).ReadToEndAsync();
+    var signingSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
+    try
+    {
+        var stripeEvent = EventUtility.ConstructEvent(
+            json,
+            request.Headers["Stripe-Signature"],
+            signingSecret
+        );
+
+        // Handle the event
+        if (stripeEvent.Type == Events.IssuingCardholderCreated)
+        {
+            Console.WriteLine("Cardholder created!");
+        }
+        else if (stripeEvent.Type == Events.IssuingCardCreated)
+        {
+            Console.WriteLine("Card created!");
+        }
+        else
+        {
+            Console.WriteLine("Unhandled event type: {0}", stripeEvent.Type);
+        }
+        return Results.Ok(new { Message = "success" });
     }
-}
+    catch (StripeException e)
+    {
+        Console.WriteLine($"{e}");
+        return Results.BadRequest(new { Error = e.Message });
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"{e}");
+        return Results.BadRequest(new { Error = $"{e}" });
+    }
+});
+
+app.Run("http://localhost:4242");

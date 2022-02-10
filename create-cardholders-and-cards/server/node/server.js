@@ -110,9 +110,9 @@ app.get('/cards/:id', async (req, res) => {
   const { id } = req.params
 
   // Retrieve a Card.
-  // 
+  //
   // See the documentation [0] for the full list of supported parameters.
-  // 
+  //
   // [0] https://stripe.com/docs/api/issuing/cards/retrieve
   try {
     const card = await stripe.issuing.cards.retrieve(id)
