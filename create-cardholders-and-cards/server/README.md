@@ -9,7 +9,7 @@ instructions in the directory on how to run.
 * [JavaScript (Node)](node/README.md)
 * [Python (Flask)](python/README.md)
 * [Ruby (Sinatra)](ruby/README.md)
-* [PHP (Slim)](php/README.md)
+* [PHP](php/README.md)
 * [Java (Spark)](java/README.md)
 * [Go](go/README.md)
 * [.NET](dotnet/README.md)

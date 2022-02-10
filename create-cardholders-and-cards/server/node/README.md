@@ -1,4 +1,4 @@
-# Name of sample
+# Create cardholders and issue cards
 
 An [Express server](http://expressjs.com) implementation
 
