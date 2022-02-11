@@ -63,18 +63,8 @@ app.MapPost("/create-cardholder", async (HttpContext ctx) =>
   }
   catch(StripeException e)
   {
-    Console.WriteLine("API Call to Stripe failed.");
-    return Results.BadRequest(e);
-  }
-  catch(System.NotSupportedException e)
-  {
-    Console.WriteLine("There was an unhandled exception.");
-    return Results.BadRequest(e);
-  }
-  catch(Exception e)
-  {
-    Console.WriteLine("There was an unhandled exception.");
-    return Results.BadRequest(e);
+    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
@@ -99,13 +89,8 @@ app.MapPost("/create-card", async (HttpContext ctx) =>
   }
   catch(StripeException e)
   {
-    Console.WriteLine(e);
-    return Results.BadRequest(e);
-  }
-  catch(Exception e)
-  {
-    Console.WriteLine(e);
-    return Results.BadRequest(e);
+    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
@@ -117,10 +102,10 @@ app.MapGet("/cards/{id}", async (string id, HttpRequest request) =>
     var card = await service.GetAsync(id);
     return Results.Ok(card);
   }
-  catch(Exception e)
+  catch(StripeException e)
   {
-    Console.WriteLine(e);
-    return Results.BadRequest(e);
+    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
