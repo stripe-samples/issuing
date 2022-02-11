@@ -1,10 +1,14 @@
 {
-  "name": "issuing-approve-authorization",
+  "name": "issuing",
   "configureDotEnv": true,
   "integrations": [
     {
+      "name": "create-cardholders-and-cards",
+      "servers": ["ruby", "python", "php", "node", "java", "go", "dotnet"]
+    },
+    {
       "name": "approve-authorization",
-      "servers": ["java", "node", "php-slim", "python", "go", "ruby"]
+      "servers": ["ruby", "python", "php", "node", "java", "go", "dotnet"]
     }
   ]
 }

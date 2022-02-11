@@ -2,7 +2,8 @@
 
 This sample shows you how to integrate with Stripe
 [Issuing](https://stripe.com/issuing). Specifically, how to leverage [Real-time
-authorizations](https://stripe.com/docs/issuing/controls/real-time-authorizations).
+authorizations](https://stripe.com/docs/issuing/controls/real-time-authorizations)
+and [Create cardholders and cards](https://stripe.com/docs/issuing/cards)
 
 # How to run locally
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stripe Issuing Sample</title>
+    <meta name="description" content="Create Stripe Issuing Cardholders and Cards" />
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+
+  <body>
+    <div class="sr-root">
+      <div class="sr-main">
+        <h1>Card</h1>
+        <div id="id"></div>
+        <div id="cardholder"></div>
+        <div id="name"></div>
+        <div id="status"></div>
+        <div id="expiry"></div>
+        <div id="last4"></div>
+      </div>
+    </div>
+  </body>
+  <script>
+    // Fetch the card data.
+    const query = window.location.search;
+    const params = new URLSearchParams(query);
+    const card_id = params.get('card_id');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      fetch(`/cards/${card_id}`, {
+        method: 'GET',
+      })
+        .then(r => r.json())
+        .then(card => {
+          document.getElementById('id').innerHTML = `<b>ID:</b> ${card.id}`
+          document.getElementById('cardholder').innerHTML = `<b>Cardholder ID:</b> ${card.cardholder.id}`
+          document.getElementById('name').innerHTML = `<b>Cardholder name:</b> ${card.cardholder.name}`
+          document.getElementById('status').innerHTML = `<b>Status:</b> ${card.status}`
+          document.getElementById('expiry').innerHTML = `<b>Expiry:</b> ${card.exp_month}/${card.exp_year}`
+          document.getElementById('last4').innerHTML = `<b>Number:</b> **** **** **** ${card.last4}`
+        })
+        .catch(e => alert(e.error.message))
+    })
+
+  </script>
+</html>
