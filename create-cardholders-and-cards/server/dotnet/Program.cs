@@ -30,7 +30,6 @@ StripeConfiguration.AppInfo = new AppInfo
 
 app.MapGet("/", () => Results.Redirect("/index.html"));
 
-
 app.MapPost("/create-cardholder", async (HttpContext ctx) =>
 {
   using var requestBodyStream = new StreamReader(ctx.Request.Body);
@@ -81,7 +80,7 @@ app.MapPost("/create-card", async (HttpContext ctx) =>
       Cardholder = req.Cardholder,
       Currency = req.Currency,
       Type = "virtual",
-      Status = req.Status ? "active" : "inactive",
+      Status = req.Status,
     };
     var service = new Stripe.Issuing.CardService();
     var card = await service.CreateAsync(options);

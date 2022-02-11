@@ -46,7 +46,7 @@ RSpec.describe "Create cardholders and cards integration" do
     resp, status = post_json('/create-card', {
       cardholder: cardholder.id,
       currency: 'usd',
-      status: true,
+      status: 'true',
       name: 'Jenny Rosen',
       line1: '510 Townsend',
       city: 'San Francisco',

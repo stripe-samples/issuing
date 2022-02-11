@@ -7,7 +7,12 @@ public class CreateCardRequest
     public string Cardholder { get; set; }
 
     [JsonPropertyName("status")]
-    public bool Status { get; set; }
+    public string _Status { get; set; }
+
+    public string Status
+    {
+        get { return _Status == "true" ? "active" : "inactive"; }
+    }
 
     [JsonPropertyName("currency")]
     public string Currency { get; set; }
