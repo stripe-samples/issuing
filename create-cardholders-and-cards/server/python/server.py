@@ -126,7 +126,7 @@ def webhook_received():
             data = event['data']
         except Exception as e:
             return e
-        # Get the type of webhook event sent - used to check the status of PaymentIntents.
+        # Get the type of webhook event sent
         event_type = event['type']
     else:
         data = request_data['data']

@@ -164,7 +164,6 @@ public class Server {
           .build();
 
       try {
-        // Create a PaymentIntent with the order amount and currency
         Cardholder cardholder = Cardholder.create(createParams);
 
         return gson.toJson(cardholder);
