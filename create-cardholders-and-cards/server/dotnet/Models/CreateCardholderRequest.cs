@@ -1,28 +1,29 @@
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class CreateCardholderRequest
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("email")]
+    [JsonPropertyName("email")]
     public string Email { get; set; }
 
-    [JsonProperty("phone_number")]
+    [JsonPropertyName("phone_number")]
     public string PhoneNumber { get; set; }
 
-    [JsonProperty("line1")]
+    [JsonPropertyName("line1")]
     public string Line1 { get; set; }
 
-    [JsonProperty("state")]
+    [JsonPropertyName("state")]
     public string State { get; set; }
 
-    [JsonProperty("city")]
+    [JsonPropertyName("city")]
     public string City { get; set; }
 
-    [JsonProperty("postal_code")]
+    [JsonPropertyName("postal_code")]
     public string PostalCode { get; set; }
 
-    [JsonProperty("country")]
+    [JsonPropertyName("country")]
     public string Country { get; set; }
 }

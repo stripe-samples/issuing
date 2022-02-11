@@ -1,8 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 
 using Stripe;
 using Stripe.Issuing;
-using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -30,25 +31,29 @@ StripeConfiguration.AppInfo = new AppInfo
 app.MapGet("/", () => Results.Redirect("/index.html"));
 
 
-app.MapPost("/create-cardholder", async (CreateCardholderRequest request) =>
+app.MapPost("/create-cardholder", async (HttpContext ctx) =>
 {
+  using var requestBodyStream = new StreamReader(ctx.Request.Body);
+  var payload = await requestBodyStream.ReadToEndAsync();
+  var req = JsonSerializer.Deserialize<CreateCardholderRequest>(payload);
+
   try
   {
     var options = new CardholderCreateOptions
     {
         Type = "individual",
-        Name = request.Name,
-        Email = request.Email,
-        PhoneNumber = "8008675309", // request.PhoneNumber,
+        Name = req.Name,
+        Email = req.Email,
+        PhoneNumber = req.PhoneNumber,
         Billing = new CardholderBillingOptions
         {
             Address = new AddressOptions
             {
-                Line1 = request.Line1,
-                City = request.City,
-                State = request.State,
-                Country = request.Country,
-                PostalCode = "94111", // request.PostalCode,
+                Line1 = req.Line1,
+                City = req.City,
+                State = req.State,
+                Country = req.Country,
+                PostalCode = req.PostalCode,
             },
         },
     };
@@ -58,26 +63,35 @@ app.MapPost("/create-cardholder", async (CreateCardholderRequest request) =>
   }
   catch(StripeException e)
   {
-    Console.WriteLine(e);
+    Console.WriteLine("API Call to Stripe failed.");
+    return Results.BadRequest(e);
+  }
+  catch(System.NotSupportedException e)
+  {
+    Console.WriteLine("There was an unhandled exception.");
     return Results.BadRequest(e);
   }
   catch(Exception e)
   {
-    Console.WriteLine(e);
+    Console.WriteLine("There was an unhandled exception.");
     return Results.BadRequest(e);
   }
 });
 
-app.MapPost("/create-card", async (CreateCardRequest request) =>
+app.MapPost("/create-card", async (HttpContext ctx) =>
 {
+  using var requestBodyStream = new StreamReader(ctx.Request.Body);
+  var payload = await requestBodyStream.ReadToEndAsync();
+  var req = JsonSerializer.Deserialize<CreateCardRequest>(payload);
+
   try
   {
     var options = new Stripe.Issuing.CardCreateOptions
     {
-      Cardholder = request.Cardholder,
-      Currency = request.Currency,
+      Cardholder = req.Cardholder,
+      Currency = req.Currency,
       Type = "virtual",
-      Status = request.Status ? "active" : "inactive",
+      Status = req.Status ? "active" : "inactive",
     };
     var service = new Stripe.Issuing.CardService();
     var card = await service.CreateAsync(options);

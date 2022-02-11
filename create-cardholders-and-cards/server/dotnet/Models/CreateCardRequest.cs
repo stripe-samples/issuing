@@ -1,13 +1,14 @@
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class CreateCardRequest
 {
-    [JsonProperty("cardholder")]
+    [JsonPropertyName("cardholder")]
     public string Cardholder { get; set; }
 
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public bool Status { get; set; }
 
-    [JsonProperty("currency")]
+    [JsonPropertyName("currency")]
     public string Currency { get; set; }
 }
