@@ -30,12 +30,8 @@ StripeConfiguration.AppInfo = new AppInfo
 
 app.MapGet("/", () => Results.Redirect("/index.html"));
 
-app.MapPost("/create-cardholder", async (HttpContext ctx) =>
+app.MapPost("/create-cardholder", async (CreateCardholderRequest req) =>
 {
-  using var requestBodyStream = new StreamReader(ctx.Request.Body);
-  var payload = await requestBodyStream.ReadToEndAsync();
-  var req = JsonSerializer.Deserialize<CreateCardholderRequest>(payload);
-
   try
   {
     var options = new CardholderCreateOptions
@@ -67,12 +63,8 @@ app.MapPost("/create-cardholder", async (HttpContext ctx) =>
   }
 });
 
-app.MapPost("/create-card", async (HttpContext ctx) =>
+app.MapPost("/create-card", async (CreateCardRequest req) =>
 {
-  using var requestBodyStream = new StreamReader(ctx.Request.Body);
-  var payload = await requestBodyStream.ReadToEndAsync();
-  var req = JsonSerializer.Deserialize<CreateCardRequest>(payload);
-
   try
   {
     var options = new Stripe.Issuing.CardCreateOptions
