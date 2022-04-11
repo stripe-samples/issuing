@@ -1,19 +1,15 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class CreateCardRequest
+public record CreateCardRequest(
+    [property: JsonPropertyName("cardholder")]
+    string Cardholder,
+
+    [property: JsonPropertyName("status")]
+    string Status,
+
+    [property: JsonPropertyName("currency")]
+    string Currency
+)
 {
-    [JsonPropertyName("cardholder")]
-    public string Cardholder { get; set; }
-
-    [JsonPropertyName("status")]
-    public string _Status { get; set; }
-
-    public string Status
-    {
-        get { return _Status == "true" ? "active" : "inactive"; }
-    }
-
-    [JsonPropertyName("currency")]
-    public string Currency { get; set; }
+  public string StatusValue => Status == "true" ? "active" : "inactive";
 }

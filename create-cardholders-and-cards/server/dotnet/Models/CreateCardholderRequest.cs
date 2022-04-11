@@ -1,29 +1,27 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class CreateCardholderRequest
-{
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
+public record CreateCardholderRequest(
+    [property: JsonPropertyName("name")]
+    string Name,
 
-    [JsonPropertyName("email")]
-    public string Email { get; set; }
+    [property: JsonPropertyName("email")]
+    string Email,
 
-    [JsonPropertyName("phone_number")]
-    public string PhoneNumber { get; set; }
+    [property: JsonPropertyName("phone_number")]
+    string PhoneNumber,
 
-    [JsonPropertyName("line1")]
-    public string Line1 { get; set; }
+    [property: JsonPropertyName("line1")]
+    string Line1,
 
-    [JsonPropertyName("state")]
-    public string State { get; set; }
+    [property: JsonPropertyName("state")]
+    string State,
 
-    [JsonPropertyName("city")]
-    public string City { get; set; }
+    [property: JsonPropertyName("city")]
+    string City,
 
-    [JsonPropertyName("postal_code")]
-    public string PostalCode { get; set; }
+    [property: JsonPropertyName("postal_code")]
+    string PostalCode,
 
-    [JsonPropertyName("country")]
-    public string Country { get; set; }
-}
+    [property: JsonPropertyName("country")]
+    string Country
+);

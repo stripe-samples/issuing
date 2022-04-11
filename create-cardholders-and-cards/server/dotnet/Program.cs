@@ -1,36 +1,53 @@
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 
 using Stripe;
 using Stripe.Issuing;
-
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-app.UseStaticFiles(new StaticFileOptions()
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), @"../../client")
-    ),
-    RequestPath = new PathString("")
-});
+using CardCreateOptions = Stripe.Issuing.CardCreateOptions;
+using CardService = Stripe.Issuing.CardService;
 
 DotNetEnv.Env.Load();
 
-StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
+
+// Setup API keys
+var stripeSecretKey = builder.Configuration["STRIPE_SECRET_KEY"];
+var stripePublishableKey = builder.Configuration["STRIPE_PUBLISHABLE_KEY"];
+var stripeWebhookSigningSecret = builder.Configuration["STRIPE_WEBHOOK_SECRET"];
+
+builder.Services.AddSingleton<IStripeClient>(new StripeClient(stripeSecretKey));
+builder.Services.AddSingleton<CardholderService>();
+builder.Services.AddSingleton<CardService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+var staticFileOptions = new SharedOptions()
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["STATIC_DIR"])
+    )
+};
+
+app.UseDefaultFiles(new DefaultFilesOptions(staticFileOptions));
+app.UseStaticFiles(new StaticFileOptions(staticFileOptions));
 
 // For sample support and debugging, not required for production:
 StripeConfiguration.AppInfo = new AppInfo
-  {
-      Name = "stripe-samples/issuing/create-cardholder-and-card",
-      Url = "https://github.com/stripe-samples",
-      Version = "0.0.1",
-  };
+{
+    Name = "stripe-samples/issuing/create-cardholder-and-card",
+    Url = "https://github.com/stripe-samples",
+    Version = "0.0.1",
+};
 
-app.MapGet("/", () => Results.Redirect("/index.html"));
-
-app.MapPost("/create-cardholder", async (CreateCardholderRequest req) =>
+app.MapPost("/create-cardholder", async (CreateCardholderRequest req, ILogger<Program> logger, CardholderService service) =>
 {
   try
   {
@@ -52,90 +69,81 @@ app.MapPost("/create-cardholder", async (CreateCardholderRequest req) =>
             },
         },
     };
-    var service = new CardholderService();
     var cardholder = await service.CreateAsync(options);
     return Results.Ok(cardholder);
   }
   catch(StripeException e)
   {
-    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    logger.LogError(e, "API Call to Stripe failed.");
     return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
-app.MapPost("/create-card", async (CreateCardRequest req) =>
+app.MapPost("/create-card", async (CreateCardRequest req, ILogger<Program> logger, CardService service) =>
 {
   try
   {
-    var options = new Stripe.Issuing.CardCreateOptions
+    var options = new CardCreateOptions
     {
       Cardholder = req.Cardholder,
       Currency = req.Currency,
       Type = "virtual",
-      Status = req.Status,
+      Status = req.StatusValue,
     };
-    var service = new Stripe.Issuing.CardService();
     var card = await service.CreateAsync(options);
     return Results.Ok(card);
   }
   catch(StripeException e)
   {
-    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    logger.LogError(e, "API Call to Stripe failed.");
     return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
-app.MapGet("/cards/{id}", async (string id, HttpRequest request) =>
+app.MapGet("/cards/{id}", async (string id, HttpRequest request, CardService service, ILogger<Program> logger) =>
 {
   try
   {
-    var service = new Stripe.Issuing.CardService();
     var card = await service.GetAsync(id);
     return Results.Ok(card);
   }
   catch(StripeException e)
   {
-    Console.WriteLine($"API Call to Stripe failed. {e.StripeError.Message}");
+    logger.LogError(e, "API Call to Stripe failed.");
     return Results.BadRequest(new { error = new { message = e.StripeError.Message }});
   }
 });
 
-app.MapPost("/webhook", async (HttpRequest request) =>
+app.MapPost("/webhook", async (HttpRequest request, ILogger<Program> logger) =>
 {
     var json = await new StreamReader(request.Body).ReadToEndAsync();
-    var signingSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
     try
     {
         var stripeEvent = EventUtility.ConstructEvent(
             json,
             request.Headers["Stripe-Signature"],
-            signingSecret
+            stripeWebhookSigningSecret
         );
 
-        // Handle the event
-        if (stripeEvent.Type == Events.IssuingCardholderCreated)
+        switch(stripeEvent.Type)
         {
-            Console.WriteLine("Cardholder created!");
+          case Events.IssuingCardCreated:
+            logger.LogInformation("Card created!");
+          break;
+          case Events.IssuingCardholderCreated:
+            logger.LogInformation("Cardholder created!");
+          break;
+          default:
+            logger.LogWarning("Unhandled event type: {0}", stripeEvent.Type);
+          break;
         }
-        else if (stripeEvent.Type == Events.IssuingCardCreated)
-        {
-            Console.WriteLine("Card created!");
-        }
-        else
-        {
-            Console.WriteLine("Unhandled event type: {0}", stripeEvent.Type);
-        }
+
         return Results.Ok(new { Message = "success" });
     }
     catch (StripeException e)
     {
-        Console.WriteLine($"{e}");
+        logger.LogError(e, "API call to Stripe failed.");
         return Results.BadRequest(new { Error = e.Message });
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine($"{e}");
-        return Results.BadRequest(new { Error = $"{e}" });
     }
 });
 
