@@ -13,32 +13,46 @@ import com.google.gson.annotations.SerializedName;
 
 import com.stripe.Stripe;
 import com.stripe.net.ApiResource;
-import com.stripe.model.Event;
-import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.PaymentIntent;
+import com.stripe.net.RequestOptions;
+import com.stripe.model.EphemeralKey;
 import com.stripe.exception.*;
-import com.stripe.net.Webhook;
-import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.EphemeralKeyCreateParams;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class Server {
   private static Gson gson = new Gson();
 
-  static class CreatePaymentRequest {
-    @SerializedName("currency")
-    String currency;
+  static class CreateCardKeyRequest {
+    @SerializedName("cardId")
+    String cardId;
 
-    public String getCurrency() {
-      return currency;
+    @SerializedName("nonce")
+    String nonce;
+
+    @SerializedName("apiVersion")
+    String apiVersion;
+
+    public String getCardId() {
+      return cardId;
+    }
+
+    public String getNonce() {
+      return nonce;
+    }
+
+    public String getApiVersion() {
+      return apiVersion;
     }
   }
 
   static class ConfigResponse {
     private String publishableKey;
+    private String cardId;
 
-    public ConfigResponse(String publishableKey) {
+    public ConfigResponse(String publishableKey, String cardId) {
       this.publishableKey = publishableKey;
+      this.cardId = cardId;
     }
   }
 
@@ -51,11 +65,11 @@ public class Server {
     }
   }
 
-  static class CreatePaymentResponse {
-    private String clientSecret;
+  static class CreateCardKeyResponse {
+    private EphemeralKey ephemeralKey;
 
-    public CreatePaymentResponse(String clientSecret) {
-      this.clientSecret = clientSecret;
+    public CreateCardKeyResponse(EphemeralKey ephemeralKey) {
+      this.ephemeralKey = ephemeralKey;
     }
   }
 
@@ -67,40 +81,45 @@ public class Server {
 
     // For sample support and debugging, not required for production:
     Stripe.setAppInfo(
-        "stripe-samples/<your-sample-name>",
+        "stripe-samples/issuing/issuing-elements",
         "0.0.1",
-        "https://github.com/stripe-samples"
-        );
+        "https://github.com/stripe-samples");
 
-    staticFiles.externalLocation(
-        Paths.get(
-          Paths.get("").toAbsolutePath().toString(),
-          dotenv.get("STATIC_DIR")
-          ).normalize().toString());
+    staticFiles.externalLocation(Paths.get(
+        Paths.get("").toAbsolutePath().toString(),
+        dotenv.get("STATIC_DIR")).normalize().toString());
 
     get("/config", (request, response) -> {
       response.type("application/json");
 
-      return gson.toJson(new ConfigResponse(dotenv.get("STRIPE_PUBLISHABLE_KEY")));
+      // You'll likely store the IDs of issued cards in your
+      // database in this demo the ID of the card is set in the
+      // .env file.
+      return gson.toJson(new ConfigResponse(dotenv.get("STRIPE_PUBLISHABLE_KEY"), dotenv.get("DEMO_CARD_ID")));
     });
 
-    post("/create-payment-intent", (request, response) -> {
+    post("/create-card-key", (request, response) -> {
       response.type("application/json");
 
-      CreatePaymentRequest postBody = gson.fromJson(request.body(), CreatePaymentRequest.class);
+      CreateCardKeyRequest postBody = gson.fromJson(request.body(), CreateCardKeyRequest.class);
 
-      PaymentIntentCreateParams createParams = new PaymentIntentCreateParams
+      EphemeralKeyCreateParams createParams = new EphemeralKeyCreateParams
         .Builder()
-        .setCurrency(postBody.getCurrency())
-        .setAmount(1999L)
+        .setIssuingCard(postBody.getCardId())
+        .putExtraParam("nonce", postBody.getNonce())
+        .build();
+
+      RequestOptions requestParams = RequestOptions
+        .builder()
+        .setStripeVersionOverride(postBody.getApiVersion())
         .build();
 
       try {
         // Create a PaymentIntent with the order amount and currency
-        PaymentIntent intent = PaymentIntent.create(createParams);
+        EphemeralKey ephemeralKey = EphemeralKey.create(createParams, requestParams);
 
         // Send PaymentIntent details to client
-        return gson.toJson(new CreatePaymentResponse(intent.getClientSecret()));
+        return gson.toJson(new CreateCardKeyResponse(ephemeralKey));
       } catch(StripeException e) {
         response.status(400);
         return gson.toJson(new FailureResponse(e.getMessage()));
@@ -108,41 +127,6 @@ public class Server {
         response.status(500);
         return gson.toJson(e);
       }
-    });
-
-    post("/webhook", (request, response) -> {
-      String payload = request.body();
-      String sigHeader = request.headers("Stripe-Signature");
-      String endpointSecret = dotenv.get("STRIPE_WEBHOOK_SECRET");
-
-      Event event = null;
-
-      try {
-        event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
-      } catch (SignatureVerificationException e) {
-        // Invalid signature
-        response.status(400);
-        return "";
-      }
-
-      switch (event.getType()) {
-        case "payment_intent.succeeded":
-          // Fulfill any orders, e-mail receipts, etc
-          // To cancel the payment you will need to issue a Refund
-          // (https://stripe.com/docs/api/refunds)
-          System.out.println("💰Payment received!");
-          break;
-        case "payment_intent.payment_failed":
-          System.out.println("❌ Payment failed.");
-          break;
-        default:
-          // Unexpected event type
-          response.status(400);
-          return "";
-      }
-
-      response.status(200);
-      return "";
     });
   }
 }

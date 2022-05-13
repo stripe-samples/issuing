@@ -1,97 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stripe Sample</title>
+    <meta name="description" content="A demo of Stripe" />
 
-<head>
-  <meta charset="utf-8" />
-  <title>Stripe Sample</title>
-  <meta name="description" content="A demo of Stripe" />
-
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="css/normalize.css" />
-  <link rel="stylesheet" href="css/global.css" />
-  <script src="https://js.stripe.com/v3/"></script>
-  <script src="/index.js" defer></script>
-
-  <!-- Issuing Element Style -->
-  <style>
-    #card-back {
-      position: relative;
-      width: 384px;
-      height: 244px;
-      background-image: url("../images/card-back.png");
-      background-size: 100%;
-      background-repeat: no-repeat;
-    }
-
-    #card-details {
-      padding-top: 40%;
-      padding-left: 4%;
-      color: white;
-      font-size: 14px;
-      font-variant: tabular-nums;
-      letter-spacing: 0rem;
-    }
-
-    #cardholder-name,
-    #card-number,
-    #card-expiry,
-    #card-cvc {
-      height: 24px;
-    }
-
-    #card-expiry,
-    #card-cvc {
-      width: 50px;
-    }
-
-    #expiry-cvc-wrapper {
-      display: flex;
-    }
-
-    #expiry-wrapper,
-    #cvc-wrapper {
-      display: flex;
-      align-items: center;
-    }
-
-    #expiry-wrapper {
-      width: 75px;
-    }
-
-    #card-expiry,
-    #card-cvc {
-      margin-left: 4px;
-    }
-  </style>
-  <!-- Formatter for currency -->
-  <script>
-    var formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    });
-  </script>
-</head>
-<body>
-  <div id="details-container">
-    <div id="card-container" class="col-span-1">
-      <div id="card-back">
-        <div id="card-details">
-          <div id="cardholder-name"></div>
-          <div id="card-number"></div>
-          <div id="expiry-cvc-wrapper">
-            <div id="expiry-wrapper">
-              <div>EXP</div>
-              <div id="card-expiry"></div>
-            </div>
-            <div id="cvc-wrapper">
-              <div>CVV</div>
-              <div id="card-cvc"></div>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="/index.js" defer></script>
+  </head>
+  <body>
+    <div id="details-container">
+      <div id="card-container" class="col-span-1">
+        <div id="card-back">
+          <div id="card-details">
+            <div id="cardholder-name"></div>
+            <div id="card-number"></div>
+            <div id="expiry-cvc-wrapper">
+              <div id="expiry-wrapper">
+                <div>EXP</div>
+                <div id="card-expiry"></div>
+              </div>
+              <div id="cvc-wrapper">
+                <div>CVV</div>
+                <div id="card-cvc"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
-
+  </body>
 </html>

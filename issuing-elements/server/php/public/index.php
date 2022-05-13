@@ -1,74 +1,110 @@
+<?php
+require_once 'shared.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stripe Sample</title>
+    <meta name="description" content="A demo of Stripe" />
 
-    <title>Accept a payment</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Load the publishable key from the server. The publishable key
+    // is set in your .env file.
 
-    <link rel="stylesheet" href="/css/base.css" />
+    // Initialize Stripe.js
+    const stripe = Stripe("<?= $_ENV['STRIPE_PUBLISHABLE_KEY']; ?>", {
+      apiVersion: "2020-08-27",
+      betas: ["issuing_elements_2"] // Only needed during the beta.
+    });
+
+    const cardId = "<?= $_ENV['DEMO_CARD_ID']; ?>";
+
+    // Create an ephemeral key nonce using the ID of the issued card.
+    const nonceResult = await stripe.createEphemeralKeyNonce({
+      issuingCard: cardId,
+    });
+
+    // Pass the nonce to the server to create a new ephemeral key
+    // for the card, so that we can retrieve its details client side.
+    const { ephemeralKey } = await fetch("/create-card-key.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cardId: cardId,
+        nonce: nonceResult.nonce,
+        apiVersion: '2020-08-27',
+      }),
+    }).then(r => r.json());
+
+    // Retrieve the card
+    const cardResult = await stripe.retrieveIssuingCard(cardId, {
+      ephemeralKeySecret: ephemeralKey.secret,
+      nonce: nonceResult.nonce,
+    });
+
+    const style = {
+      base: {
+        color: "white",
+        fontSize: "14px",
+        lineHeight: "24px",
+      },
+    };
+
+    // Mount and display the card details
+    const elements = stripe.elements();
+    const number = elements.create("issuingCardNumberDisplay", {
+      style,
+      issuingCard: cardId,
+    });
+    number.mount("#card-number");
+
+    const cvc = elements.create("issuingCardCvcDisplay", {
+      style,
+      issuingCard: cardId,
+    });
+    cvc.mount("#card-cvc");
+
+    const expiry = elements.create("issuingCardExpiryDisplay", {
+      style,
+      issuingCard: cardId,
+    });
+    expiry.mount("#card-expiry");
+
+    // Mount the card details onto DOM elements in your web application
+    const name = document.getElementById("cardholder-name");
+    name.textContent = cardResult.issuingCard.cardholder.name;
+  });
+    </script>
   </head>
   <body>
-    <main>
-      <h1>Accept a payment</h1>
-
-      <h3>Cards</h3>
-      <ul>
-        <li>
-          <a href="/card.php">Card</a>
-        </li>
-      </ul>
-
-      <h3>Bank debits</h3>
-      <ul>
-        <li>ACH Direct Debit</li>
-        <li>Bacs Direct Debit</li>
-        <li>
-          <a href="/becs-debit.php">BECS Direct Debit</a>
-        </li>
-        <li>
-          <a href="/sepa-debit.php">SEPA Direct Debit</a>
-        </li>
-      </ul>
-
-      <h3>Bank redirects</h3>
-      <ul>
-        <li><a href="/bancontact.php">Bancontact</a></li>
-        <li><a href="/eps.php">EPS</a></li>
-        <li><a href="/fpx.php">FPX</a></li>
-        <li><a href="/giropay.php">giropay</a></li>
-        <li><a href="/ideal.php">iDEAL</a></li>
-        <li><a href="/p24.php">Przelewy24 (P24)</a></li>
-        <li><a href="/sofort.php">Sofort</a></li>
-      </ul>
-
-      <h3>Bank transfers</h3>
-      <ul>
-        <li>ACH Credit</li>
-        <li>Multibanco</li>
-      </ul>
-
-      <h3>Buy now pay later</h3>
-      <ul>
-        <li><a href="/afterpay-clearpay.php">Afterpay / Clearpay</a></li>
-        <li>Klarna</li>
-      </ul>
-
-      <h3>Vouchers</h3>
-      <ul>
-        <li><a href="/boleto.php">Boleto</a></li>
-        <li><a href="/oxxo.php">OXXO</a></li>
-      </ul>
-
-      <h3>Wallets</h3>
-      <ul>
-        <li><a href="/alipay.php">Alipay</a></li>
-        <li><a href="/apple-pay.php">Apple Pay</a></li>
-        <li><a href="/google-pay.php">Google Pay</a></li>
-        <li><a href="/grabpay.php">GrabPay</a></li>
-        <li>Microsoft Pay</li>
-        <li>WeChat Pay</li>
-      </ul>
-    </main>
+    <div id="details-container">
+      <div id="card-container" class="col-span-1">
+        <div id="card-back">
+          <div id="card-details">
+            <div id="cardholder-name"></div>
+            <div id="card-number"></div>
+            <div id="expiry-cvc-wrapper">
+              <div id="expiry-wrapper">
+                <div>EXP</div>
+                <div id="card-expiry"></div>
+              </div>
+              <div id="cvc-wrapper">
+                <div>CVV</div>
+                <div id="card-cvc"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

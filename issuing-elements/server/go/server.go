@@ -5,15 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v72"
-	"github.com/stripe/stripe-go/v72/webhook"
-	"github.com/stripe/stripe-go/v72/paymentintent"
+	"github.com/stripe/stripe-go/v72/ephemeralkey"
 )
 
 func main() {
@@ -26,15 +24,14 @@ func main() {
 
 	// For sample support and debugging, not required for production:
 	stripe.SetAppInfo(&stripe.AppInfo{
-		Name:    "stripe-samples/your-sample-name",
+		Name:    "stripe-samples/issuing/issuing-elements",
 		Version: "0.0.1",
 		URL:     "https://github.com/stripe-samples",
 	})
 
 	http.Handle("/", http.FileServer(http.Dir(os.Getenv("STATIC_DIR"))))
 	http.HandleFunc("/config", handleConfig)
-	http.HandleFunc("/create-payment-intent", handleCreatePaymentIntent)
-	http.HandleFunc("/webhook", handleWebhook)
+	http.HandleFunc("/create-card-key", handleCreateCardKey)
 
 	log.Println("server running at 0.0.0.0:4242")
 	http.ListenAndServe("0.0.0.0:4242", nil)
@@ -58,26 +55,31 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, struct {
+		CardID string `json:"cardId"`
 		PublishableKey string `json:"publishableKey"`
 	}{
+		CardID: os.Getenv("DEMO_CARD_ID"),
 		PublishableKey: os.Getenv("STRIPE_PUBLISHABLE_KEY"),
 	})
 }
 
-type paymentIntentCreateReq struct {
-	Currency          string `json:"currency"`
+type cardKeyCreateReq struct {
+	CardID          string `json:"cardId"`
+	Nonce          string `json:"nonce"`
+	APIVersion          string `json:"apiVersion"`
 }
 
-func handleCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
-	req := paymentIntentCreateReq{}
+func handleCreateCardKey(w http.ResponseWriter, r *http.Request) {
+	req := cardKeyCreateReq{}
 	json.NewDecoder(r.Body).Decode(&req)
 
-	params := &stripe.PaymentIntentParams{
-		Amount:             stripe.Int64(1999),
-		Currency:           stripe.String(req.Currency),
+	params := &stripe.EphemeralKeyParams{
+		IssuingCard:     stripe.String(req.CardID),
+		StripeVersion:   stripe.String(req.APIVersion),
 	}
+	params.AddExtra("nonce", req.Nonce)
 
-	pi, err := paymentintent.New(params)
+	ek, err := ephemeralkey.New(params)
 	if err != nil {
 		// Try to safely cast a generic error to a stripe.Error so that we can get at
 		// some additional Stripe-specific information about what went wrong.
@@ -93,36 +95,10 @@ func handleCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, struct {
-		ClientSecret string `json:"clientSecret"`
+		EphemeralKey *stripe.EphemeralKey `json:"ephemeralKey"`
 	}{
-		ClientSecret: pi.ClientSecret,
+		EphemeralKey: ek,
 	})
-}
-
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("ioutil.ReadAll: %v", err)
-		return
-	}
-
-	event, err := webhook.ConstructEvent(b, r.Header.Get("Stripe-Signature"), os.Getenv("STRIPE_WEBHOOK_SECRET"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("webhook.ConstructEvent: %v", err)
-		return
-	}
-
-	if event.Type == "checkout.session.completed" {
-		fmt.Println("Checkout Session completed!")
-	}
-
-	writeJSON(w, nil)
 }
 
 func writeJSON(w http.ResponseWriter, v interface{}) {

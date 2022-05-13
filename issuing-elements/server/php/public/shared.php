@@ -12,7 +12,7 @@ if(!file_exists('../.env')) {
   <pre>STRIPE_PUBLISHABLE_KEY=pk_test...
 STRIPE_SECRET_KEY=sk_test...
 STRIPE_WEBHOOK_SECRET=whsec_...
-DOMAIN=http://localhost:4242</pre>
+DEMO_CARD_ID=ic_...</pre>
   <hr>
 
   <p>You can use this command to get started:</p>
@@ -38,7 +38,7 @@ if (!$_ENV['STRIPE_SECRET_KEY']) {
   <pre>STRIPE_PUBLISHABLE_KEY=pk_test...
 STRIPE_SECRET_KEY=sk_test...
 STRIPE_WEBHOOK_SECRET=whsec_...
-DOMAIN=http://localhost:4242</pre>
+DEMO_CARD_ID=ic_...</pre>
   <hr>
 
   <p>You can use this command to get started:</p>
@@ -50,7 +50,7 @@ DOMAIN=http://localhost:4242</pre>
 
 // For sample support and debugging. Not required for production:
 \Stripe\Stripe::setAppInfo(
-  "stripe-samples/<your sample name>",
+  "stripe-samples/issuing/issuing-elements",
   "0.0.2",
   "https://github.com/stripe-samples"
 );
