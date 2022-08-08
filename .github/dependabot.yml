@@ -10,49 +10,57 @@ updates:
     directory: "/approve-authorization/server/ruby/"
     schedule:
       interval: "weekly"
+      day: "thursday"
   - package-ecosystem: "bundler"
     directory: "/create-cardholders-and-cards/server/ruby/"
     schedule:
       interval: "weekly"
-
+      day: "thursday"
 
   # python dependencies
   - package-ecosystem: "pip"
     directory: "/create-cardholders-and-cards/server/python/"
     schedule:
       interval: "weekly"
+      day: "thursday"
 
   # php dependencies
   - package-ecosystem: "composer"
     directory: "/create-cardholders-and-cards/server/php/"
     schedule:
       interval: "weekly"
+      day: "thursday"
 
   # node dependencies
-  - package-ecosystm: "npm"
+  - package-ecosystem: "npm"
     directory: "/create-cardholders-and-cards/server/node/"
     schedule:
       interval: "weekly"
+      day: "thursday"
 
   # go dependencies
   - package-ecosystem: "gomod"
     directory: "/create-cardholders-and-cards/server/go/"
     schedule:
       interval: "weekly"
+      day: "thursday"
 
   # java dependencies
   - package-ecosystem: "maven"
     directory: "/create-cardholders-and-cards/server/java/"
     schedule:
       interval: "weekly"
+      day: "thursday"
 
   # dotnet dependencies
   - package-ecosystem: "nuget"
     directory: "/approve-authorization/server/dotnet/"
     schedule:
       interval: "weekly"
+      day: "thursday"
   # dotnet dependencies
   - package-ecosystem: "nuget"
     directory: "/create-cardholders-and-cards/server/dotnet/"
     schedule:
       interval: "weekly"
+      day: "thursday"
