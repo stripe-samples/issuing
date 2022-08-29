@@ -45,7 +45,7 @@ public class Server {
         return "";
       }
 
-      if (event.getType() == "issuing_authorization.request") {
+      if (event.getType().equals("issuing_authorization.request")) {
         // Deserialize the nested object inside the event
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         if (dataObjectDeserializer.getObject().isPresent()) {
