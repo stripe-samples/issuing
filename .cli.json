@@ -12,6 +12,7 @@
     },
     {
       "name": "issuing-elements",
+      "clients": ["html"],
       "servers": ["ruby", "python", "php", "node", "java", "go", "dotnet"]
     }
   ]
