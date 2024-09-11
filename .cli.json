@@ -9,6 +9,11 @@
     {
       "name": "approve-authorization",
       "servers": ["ruby", "python", "php", "node", "java", "go", "dotnet"]
+    },
+    {
+      "name": "issuing-elements",
+      "clients": ["html"],
+      "servers": ["ruby", "python", "php", "node", "java", "go", "dotnet"]
     }
   ]
 }
