@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.0.0" />
-    <PackageReference Include="Stripe.net" Version="45.1.0" />
+    <PackageReference Include="Stripe.net" Version="48.0.0" />
   </ItemGroup>
 
 </Project>
