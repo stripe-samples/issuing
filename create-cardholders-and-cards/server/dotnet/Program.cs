@@ -127,10 +127,10 @@ app.MapPost("/webhook", async (HttpRequest request, ILogger<Program> logger) =>
 
         switch(stripeEvent.Type)
         {
-          case Events.IssuingCardCreated:
+          case EventTypes.IssuingCardCreated:
             logger.LogInformation("Card created!");
           break;
-          case Events.IssuingCardholderCreated:
+          case EventTypes.IssuingCardholderCreated:
             logger.LogInformation("Cardholder created!");
           break;
           default:

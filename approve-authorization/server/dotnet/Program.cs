@@ -20,7 +20,7 @@ app.MapPost("/webhook", async (HttpRequest request) =>
         );
 
         // Handle the event
-        if (stripeEvent.Type == Events.IssuingAuthorizationRequest)
+        if (stripeEvent.Type == EventTypes.IssuingAuthorizationRequest)
         {
             var authorization = stripeEvent.Data.Object as Authorization;
             var service = new AuthorizationService();

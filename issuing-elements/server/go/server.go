@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/stripe/stripe-go/v72"
-	"github.com/stripe/stripe-go/v72/ephemeralkey"
+	"github.com/stripe/stripe-go/v84"
+	"github.com/stripe/stripe-go/v84/ephemeralkey"
 )
 
 func main() {
