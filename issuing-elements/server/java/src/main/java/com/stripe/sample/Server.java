@@ -107,16 +107,12 @@ public class Server {
         .Builder()
         .setIssuingCard(postBody.getCardId())
         .putExtraParam("nonce", postBody.getNonce())
-        .build();
-
-      RequestOptions requestParams = RequestOptions
-        .builder()
-        .setStripeVersionOverride(postBody.getApiVersion())
+        .putExtraParam("stripe-version", postBody.getApiVersion())
         .build();
 
       try {
         // Create a PaymentIntent with the order amount and currency
-        EphemeralKey ephemeralKey = EphemeralKey.create(createParams, requestParams);
+        EphemeralKey ephemeralKey = EphemeralKey.create(createParams);
 
         // Send PaymentIntent details to client
         return gson.toJson(new CreateCardKeyResponse(ephemeralKey));

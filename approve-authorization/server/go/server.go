@@ -9,9 +9,9 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/stripe/stripe-go/v72"
-	"github.com/stripe/stripe-go/v72/issuing/authorization"
-	"github.com/stripe/stripe-go/v72/webhook"
+	"github.com/stripe/stripe-go/v84"
+	"github.com/stripe/stripe-go/v84/issuing/authorization"
+	"github.com/stripe/stripe-go/v84/webhook"
 )
 
 func main() {

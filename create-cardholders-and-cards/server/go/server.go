@@ -12,10 +12,10 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/stripe/stripe-go/v72"
-	"github.com/stripe/stripe-go/v72/issuing/card"
-	"github.com/stripe/stripe-go/v72/issuing/cardholder"
-	"github.com/stripe/stripe-go/v72/webhook"
+	"github.com/stripe/stripe-go/v84"
+	"github.com/stripe/stripe-go/v84/issuing/card"
+	"github.com/stripe/stripe-go/v84/issuing/cardholder"
+	"github.com/stripe/stripe-go/v84/webhook"
 )
 
 func main() {
