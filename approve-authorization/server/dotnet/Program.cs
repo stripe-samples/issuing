@@ -5,6 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 DotNetEnv.Env.Load();
+// Don't put any keys in code. Use an environment variable (as shown
+// here) or secrets vault to supply keys to your integration.
+//
+// See https://docs.stripe.com/keys-best-practices and find your
+// keys at https://dashboard.stripe.com/apikeys.
 StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
 
 app.MapPost("/webhook", async (HttpRequest request) =>

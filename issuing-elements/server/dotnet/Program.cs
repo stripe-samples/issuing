@@ -11,6 +11,11 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.Configure<StripeOptions>(options =>
 {
     options.PublishableKey = builder.Configuration["STRIPE_PUBLISHABLE_KEY"];
+    // Don't put any keys in code. Use an environment variable (as shown
+    // here) or secrets vault to supply keys to your integration.
+    //
+    // See https://docs.stripe.com/keys-best-practices and find your
+    // keys at https://dashboard.stripe.com/apikeys.
     options.SecretKey = builder.Configuration["STRIPE_SECRET_KEY"];
     options.DemoCardId = builder.Configuration["DEMO_CARD_ID"];
 });
