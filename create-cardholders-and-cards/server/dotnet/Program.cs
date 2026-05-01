@@ -14,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 // Setup API keys
+// Don't put any keys in code. Use an environment variable (as shown
+// here) or secrets vault to supply keys to your integration.
+//
+// See https://docs.stripe.com/keys-best-practices and find your
+// keys at https://dashboard.stripe.com/apikeys.
 var stripeSecretKey = builder.Configuration["STRIPE_SECRET_KEY"];
 var stripePublishableKey = builder.Configuration["STRIPE_PUBLISHABLE_KEY"];
 var stripeWebhookSigningSecret = builder.Configuration["STRIPE_WEBHOOK_SECRET"];
