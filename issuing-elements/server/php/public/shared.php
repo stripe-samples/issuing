@@ -62,5 +62,5 @@ DEMO_CARD_ID=ic_...</pre>
 
 $stripe = new \Stripe\StripeClient([
   'api_key' => $_ENV['STRIPE_SECRET_KEY'],
-  'stripe_version' => '2020-08-27',
+  'stripe_version' => '2026-10-28.endive',
 ]);

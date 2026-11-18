@@ -19,7 +19,7 @@ require_once 'shared.php';
 
     // Initialize Stripe.js
     const stripe = Stripe("<?= $_ENV['STRIPE_PUBLISHABLE_KEY']; ?>", {
-      apiVersion: "2020-08-27",
+      apiVersion: "2026-10-28.endive",
       betas: ["issuing_elements_2"] // Only needed during the beta.
     });
 
@@ -41,7 +41,7 @@ require_once 'shared.php';
       body: JSON.stringify({
         cardId: cardId,
         nonce: nonceResult.nonce,
-        apiVersion: '2020-08-27',
+        apiVersion: '2026-10-28.endive',
       }),
     }).then(r => r.json());
 

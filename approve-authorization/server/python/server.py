@@ -18,7 +18,7 @@ stripe.set_app_info(
     version='0.0.1',
     url='https://github.com/stripe-samples')
 
-stripe.api_version = '2020-08-27'
+stripe.api_version = '2026-10-28.endive'
 
 # Set your secret key. Remember to switch to your live secret key in production.
 # See your keys here: https://dashboard.stripe.com/apikeys

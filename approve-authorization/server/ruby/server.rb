@@ -23,7 +23,7 @@ Stripe.set_app_info(
 # See https://docs.stripe.com/keys-best-practices and find your
 # keys at https://dashboard.stripe.com/apikeys.
 Stripe.api_key = ENV['STRIPE_SECRET_KEY']
-Stripe.api_version = '2020-08-27'
+Stripe.api_version = '2026-10-28.endive'
 
 post '/webhook' do
   webhook_secret = ENV['STRIPE_WEBHOOK_SECRET']
