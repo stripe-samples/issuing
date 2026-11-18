@@ -11,7 +11,7 @@ require_once 'shared.php';
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/global.css" />
-    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://js.stripe.com/endive/stripe.js"></script>
     <script>
   document.addEventListener("DOMContentLoaded", async () => {
     // Load the publishable key from the server. The publishable key
