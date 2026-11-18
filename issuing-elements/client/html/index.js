@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Initialize Stripe.js
   const stripe = Stripe(publishableKey, {
-    apiVersion: "2020-08-27",
+    apiVersion: "2026-10-28.endive",
     betas: ["issuing_elements_2"] // Only needed during the beta.
   });
 
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     body: JSON.stringify({
       cardId: cardId,
       nonce: nonceResult.nonce,
-      apiVersion: '2020-08-27',
+      apiVersion: '2026-10-28.endive',
     }),
   }).then(r => r.json());
 

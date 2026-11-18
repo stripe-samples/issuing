@@ -21,7 +21,7 @@ $stripe = new \Stripe\StripeClient([
   # See https://docs.stripe.com/keys-best-practices and find your
   # keys at https://dashboard.stripe.com/apikeys.
   'api_key' => $_ENV['STRIPE_SECRET_KEY'],
-  'stripe_version' => '2020-08-27',
+  'stripe_version' => '2026-10-28.endive',
 ]);
 
 // If you are testing your webhook locally with the Stripe CLI you
